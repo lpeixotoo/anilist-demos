@@ -6,11 +6,18 @@
 
 import { PassThrough } from "node:stream";
 
+import {
+	ApolloClient,
+	ApolloProvider,
+	InMemoryCache,
+	createHttpLink,
+} from "@apollo/client";
 import type { AppLoadContext, EntryContext } from "@remix-run/node";
-import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
+
+import { anilistServerClient } from "./services/anilist";
 
 const ABORT_DELAY = 5_000;
 
@@ -19,12 +26,9 @@ export default function handleRequest(
 	responseStatusCode: number,
 	responseHeaders: Headers,
 	remixContext: EntryContext,
-	// This is ignored so we can keep it in the template for visibility.  Feel
-	// free to delete this parameter in your app if you're not using it!
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	loadContext: AppLoadContext,
 ) {
-	return isbot(request.headers.get("user-agent") || "")
+	return isbot(request.headers.get("user-agent"))
 		? handleBotRequest(
 				request,
 				responseStatusCode,
@@ -47,25 +51,26 @@ function handleBotRequest(
 ) {
 	return new Promise((resolve, reject) => {
 		let shellRendered = false;
-		let statusCode = responseStatusCode;
+
 		const { pipe, abort } = renderToPipeableStream(
-			<RemixServer
-				context={remixContext}
-				url={request.url}
-				abortDelay={ABORT_DELAY}
-			/>,
+			<ApolloProvider client={anilistServerClient}>
+				<RemixServer
+					context={remixContext}
+					url={request.url}
+					abortDelay={ABORT_DELAY}
+				/>
+			</ApolloProvider>,
 			{
 				onAllReady() {
 					shellRendered = true;
 					const body = new PassThrough();
-					const stream = createReadableStreamFromReadable(body);
 
 					responseHeaders.set("Content-Type", "text/html");
 
 					resolve(
-						new Response(stream, {
+						new Response(body, {
 							headers: responseHeaders,
-							status: statusCode,
+							status: responseStatusCode,
 						}),
 					);
 
@@ -75,7 +80,7 @@ function handleBotRequest(
 					reject(error);
 				},
 				onError(error: unknown) {
-					statusCode = 500;
+					responseStatusCode = 500;
 					// Log streaming rendering errors from inside the shell.  Don't log
 					// errors encountered during initial shell rendering since they'll
 					// reject and get logged in handleDocumentRequest.
@@ -98,25 +103,37 @@ function handleBrowserRequest(
 ) {
 	return new Promise((resolve, reject) => {
 		let shellRendered = false;
-		let statusCode = responseStatusCode;
+		const anilistServerClient = new ApolloClient({
+			ssrMode: true, // Indicates that we want to use server side rendering
+			link: createHttpLink({
+				// Use createHttpLink instead of uri
+				uri: "https://spacex-production.up.railway.app/", //Path to GraphQL schema
+				headers: {
+					"Access-Control-Allow-Origin": "*", //Cors management
+				},
+			}),
+			cache: new InMemoryCache(), // Cache management
+		});
+
 		const { pipe, abort } = renderToPipeableStream(
-			<RemixServer
-				context={remixContext}
-				url={request.url}
-				abortDelay={ABORT_DELAY}
-			/>,
+			<ApolloProvider client={anilistServerClient}>
+				<RemixServer
+					context={remixContext}
+					url={request.url}
+					abortDelay={ABORT_DELAY}
+				/>
+			</ApolloProvider>,
 			{
 				onShellReady() {
 					shellRendered = true;
 					const body = new PassThrough();
-					const stream = createReadableStreamFromReadable(body);
 
 					responseHeaders.set("Content-Type", "text/html");
 
 					resolve(
-						new Response(stream, {
+						new Response(body, {
 							headers: responseHeaders,
-							status: statusCode,
+							status: responseStatusCode,
 						}),
 					);
 
@@ -126,7 +143,7 @@ function handleBrowserRequest(
 					reject(error);
 				},
 				onError(error: unknown) {
-					statusCode = 500;
+					responseStatusCode = 500;
 					// Log streaming rendering errors from inside the shell.  Don't log
 					// errors encountered during initial shell rendering since they'll
 					// reject and get logged in handleDocumentRequest.
