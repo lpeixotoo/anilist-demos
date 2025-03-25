@@ -1,5 +1,5 @@
 {
-	"name": "swapi-ts",
+	"name": "anilist-ts",
 	"private": true,
 	"sideEffects": false,
 	"type": "module",
@@ -8,14 +8,18 @@
 		"dev": "remix vite:dev",
 		"lint": "npx @biomejs/biome check --write .",
 		"start": "remix-serve ./build/server/index.js",
-		"typecheck": "tsc"
+		"typecheck": "tsc",
+		"compile": "graphql-codegen",
+		"watch": "graphql-codegen -w"
 	},
 	"dependencies": {
+		"@apollo/client": "^3.13.5",
 		"@remix-run/node": "^2.16.2",
 		"@remix-run/react": "^2.16.2",
 		"@remix-run/serve": "^2.16.2",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"graphql": "^16.10.0",
 		"isbot": "^4.1.0",
 		"lucide-react": "^0.484.0",
 		"react": "^18.2.0",
@@ -25,6 +29,8 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
+		"@graphql-codegen/cli": "^5.0.5",
+		"@graphql-codegen/client-preset": "^4.8.0",
 		"@remix-run/dev": "^2.16.2",
 		"@types/react": "^18.2.20",
 		"@types/react-dom": "^18.2.7",

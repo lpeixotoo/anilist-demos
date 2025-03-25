@@ -4,15 +4,21 @@
  * For more information, see https://remix.run/file-conventions/entry.client
  */
 
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { RemixBrowser } from "@remix-run/react";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 
+const anilistClient = new ApolloClient({
+	cache: new InMemoryCache().restore(window.__APOLLO_STATE__),
+	uri: "https://graphql.anilist.co",
+});
+
 startTransition(() => {
 	hydrateRoot(
 		document,
-		<StrictMode>
+		<ApolloProvider client={anilistClient}>
 			<RemixBrowser />
-		</StrictMode>,
+		</ApolloProvider>,
 	);
 });
