@@ -1,13 +1,16 @@
 import type { MetaFunction } from "@remix-run/node";
+import { Card, CardContent } from "~/components/ui/card";
 import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "~/components/ui/table";
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from "~/components/ui/carousel";
+
+import { useQuery } from "@apollo/client";
+import type { Media } from "~/graphql/__generated__/graphql";
+import { GET_SORTED_MEDIA_PAGE } from "~/services/anilist";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -15,44 +18,67 @@ export const meta: MetaFunction = () => {
 		{ name: "description", content: "Welcome to Remix!" },
 	];
 };
-import { useQuery } from "@apollo/client";
-import { GET_MOST_POPULAR_PAGE } from "~/services/anilist";
 
 export default function Index() {
-	const { loading, error, data } = useQuery(GET_MOST_POPULAR_PAGE, {
-		variables: { page: 1 },
+	const {
+		loading,
+		error,
+		data: mostPopularAnime,
+		fetchMore,
+	} = useQuery(GET_SORTED_MEDIA_PAGE, {
+		variables: {
+			page: 1,
+			pageSize: 10,
+			sortBy: "POPULARITY_DESC",
+			sortType: "ANIME",
+		},
 	});
 
-	if (loading) return <p>Loading...</p>;
-	if (error) return <p>Error : {error.message}</p>;
+	if (loading)
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<p>Loading...</p>
+			</div>
+		);
+	if (error)
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<p>Error: {error.message}</p>
+			</div>
+		);
 
 	return (
-		<Table>
-			<TableCaption>A list of your favorite anime.</TableCaption>
-			<TableHeader>
-				<TableRow>
-					<TableHead className="w-[100px]">Title</TableHead>
-					<TableHead>Director</TableHead>
-					<TableHead>Producers</TableHead>
-					<TableHead>Release Date</TableHead>
-					<TableHead className="text-right">Episode</TableHead>
-				</TableRow>
-			</TableHeader>
-			<TableBody>
-				{data.map((movie: any) => (
-					<TableRow key={movie.id}>
-						<TableCell className="font-medium">
-							{movie.title ?? "No Title"}
-						</TableCell>
-						<TableCell>{movie.director ?? "No director"}</TableCell>
-						<TableCell>{movie.producers ?? "No producers"}</TableCell>
-						<TableCell>{movie.releaseDate ?? "No date"}</TableCell>
-						<TableCell className="text-right">
-							{movie.episodeID ?? "No episode"}
-						</TableCell>
-					</TableRow>
+		<Carousel
+			opts={{
+				align: "start",
+			}}
+			className="w-full max-w-7xl mx-auto"
+		>
+			<CarouselContent className="flex">
+				{mostPopularAnime?.Page?.media?.map((anime: Media) => (
+					<CarouselItem
+						key={anime?.id}
+						className="md:basis-1/3 lg:basis-1/6 flex-shrink-0"
+					>
+						<div className="p-2">
+							<Card className={`border-4 border-[${anime.coverImage?.color}]`}>
+								<CardContent className="flex flex-col items-center justify-center">
+									<img
+										src={anime?.coverImage?.large}
+										alt={anime?.title?.english || anime?.title?.romaji}
+										className="h-48 rounded-md"
+									/>
+									<h3 className="mt-2 text-left text-sm font-semibold">
+										{anime?.title?.english || anime?.title?.romaji}
+									</h3>
+								</CardContent>
+							</Card>
+						</div>
+					</CarouselItem>
 				))}
-			</TableBody>
-		</Table>
+			</CarouselContent>
+			<CarouselPrevious />
+			<CarouselNext />
+		</Carousel>
 	);
 }
