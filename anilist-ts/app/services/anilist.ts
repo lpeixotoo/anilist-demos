@@ -18,16 +18,17 @@ export const anilistServerClient = new ApolloClient({
 	cache: new InMemoryCache(), // Cache management
 });
 
-export const GET_MOST_POPULAR_PAGE = gql`
-  query($page: Int) {
-    Page(page: $page, perPage: 10) {
-      media(sort: POPULARITY_DESC, type: ANIME) {
+export const GET_SORTED_MEDIA_PAGE = gql`
+  query MostPopular ($page: Int, $pageSize: Int, $sortBy: [MediaSort], $sortType: MediaType) {
+    Page(page: $page, perPage: $pageSize) {
+      media(sort: $sortBy, type: $sortType) {
         title {
           english
         }
         description
+        id
         coverImage {
-          medium
+          large
           color
         }
       }
