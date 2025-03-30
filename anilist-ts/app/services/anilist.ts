@@ -32,5 +32,10 @@ export const GET_SORTED_MEDIA_PAGE = gql`
           color
         }
       }
+      pageInfo {
+        hasNextPage
+        lastPage
+        currentPage
+      }
     }
   }`;
