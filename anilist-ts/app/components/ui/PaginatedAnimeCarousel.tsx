@@ -8,26 +8,24 @@ import {
 	CarouselPrevious,
 } from "~/components/ui/carousel";
 
-import { useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import type { Media } from "~/graphql/__generated__/graphql";
-import { GET_SORTED_MEDIA_PAGE } from "~/services/anilist";
 
-export default function AnimeList() {
-	const {
-		loading,
-		error,
-		data: mostPopularAnime,
-		fetchMore,
-	} = useQuery(GET_SORTED_MEDIA_PAGE, {
-		variables: {
-			page: 1,
-			pageSize: 10,
-			sortBy: "POPULARITY_DESC",
-			sortType: "ANIME",
-		},
-		notifyOnNetworkStatusChange: true,
-	});
+type PaginatedAnimeCarouselProps = {
+	pageSize: number;
+	loading: boolean;
+	error: string | undefined;
+	animeMedias: Media[];
+	fetchOnScrollEnd: (page: number) => void;
+};
+
+export function PaginatedAnimeCarousel({
+	pageSize,
+	loading,
+	error,
+	animeMedias,
+	fetchOnScrollEnd,
+}: PaginatedAnimeCarouselProps) {
 	const [api, setApi] = useState<CarouselApi>();
 
 	useEffect(() => {
@@ -35,28 +33,21 @@ export default function AnimeList() {
 			return;
 		}
 
-		api.on("select", () => {
-			console.log(api.scrollProgress());
+		const handleSelect = () => {
+			if (!api) return;
+
 			if (api.scrollProgress() >= 0.7) {
-				fetchMore({
-					variables: {
-						page: api.slideNodes().length / 10 + 1,
-					},
-					updateQuery: (prev, { fetchMoreResult }) => {
-						return fetchMoreResult
-							? {
-									...fetchMoreResult,
-									Page: {
-										...fetchMoreResult.Page,
-										media: [...prev.Page.media, ...fetchMoreResult.Page.media],
-									},
-								}
-							: prev;
-					},
-				});
+				const nextPage = Math.ceil(api.slideNodes().length / pageSize) + 1;
+				fetchOnScrollEnd(nextPage);
 			}
-		});
-	}, [api, fetchMore]);
+		};
+
+		api.on("settle", handleSelect);
+
+		return () => {
+			api.off("settle", handleSelect);
+		};
+	}, [api, fetchOnScrollEnd, pageSize]);
 
 	if (loading && !api?.scrollProgress())
 		return (
@@ -67,7 +58,7 @@ export default function AnimeList() {
 	if (error)
 		return (
 			<div className="flex justify-center items-center h-screen">
-				<p>Error: {error.message}</p>
+				<p>Error: {error}</p>
 			</div>
 		);
 
@@ -80,7 +71,7 @@ export default function AnimeList() {
 			className="w-full max-w-7xl mx-auto"
 		>
 			<CarouselContent className="flex">
-				{mostPopularAnime?.Page?.media?.map((anime: Media) => (
+				{animeMedias?.map((anime) => (
 					<CarouselItem
 						key={anime?.id}
 						className="md:basis-1/3 lg:basis-1/6 flex-shrink-0"
