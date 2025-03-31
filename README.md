@@ -1,4 +1,4 @@
-# SWAPI demos
+# Anilist demos
 
-An use o SWAPI (Star Wars API) in GraphQL in multiple languages
+An use o Anilist GraphQL API in multiple languages
 

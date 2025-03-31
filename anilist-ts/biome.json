@@ -7,7 +7,11 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": ["remix.env.d.ts"]
+		"ignore": [
+			"remix.env.d.ts",
+			"graphql/__generated__/*",
+			"components/ui/carousel.tsx"
+		]
 	},
 	"formatter": {
 		"enabled": true,

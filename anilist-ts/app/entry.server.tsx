@@ -51,6 +51,7 @@ function handleBotRequest(
 ) {
 	return new Promise((resolve, reject) => {
 		let shellRendered = false;
+		let statusCode = responseStatusCode;
 
 		const { pipe, abort } = renderToPipeableStream(
 			<ApolloProvider client={anilistServerClient}>
@@ -70,7 +71,7 @@ function handleBotRequest(
 					resolve(
 						new Response(body, {
 							headers: responseHeaders,
-							status: responseStatusCode,
+							status: statusCode,
 						}),
 					);
 
@@ -80,7 +81,7 @@ function handleBotRequest(
 					reject(error);
 				},
 				onError(error: unknown) {
-					responseStatusCode = 500;
+					statusCode = 500;
 					// Log streaming rendering errors from inside the shell.  Don't log
 					// errors encountered during initial shell rendering since they'll
 					// reject and get logged in handleDocumentRequest.
@@ -103,6 +104,7 @@ function handleBrowserRequest(
 ) {
 	return new Promise((resolve, reject) => {
 		let shellRendered = false;
+		let statusCode = responseStatusCode;
 		const anilistServerClient = new ApolloClient({
 			ssrMode: true, // Indicates that we want to use server side rendering
 			link: createHttpLink({
@@ -133,7 +135,7 @@ function handleBrowserRequest(
 					resolve(
 						new Response(body, {
 							headers: responseHeaders,
-							status: responseStatusCode,
+							status: statusCode,
 						}),
 					);
 
@@ -143,7 +145,7 @@ function handleBrowserRequest(
 					reject(error);
 				},
 				onError(error: unknown) {
-					responseStatusCode = 500;
+					statusCode = 500;
 					// Log streaming rendering errors from inside the shell.  Don't log
 					// errors encountered during initial shell rendering since they'll
 					// reject and get logged in handleDocumentRequest.
