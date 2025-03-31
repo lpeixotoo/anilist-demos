@@ -1,40 +1,51 @@
-# Welcome to Remix!
+# AniList Remix App
 
-- 📖 [Remix docs](https://remix.run/docs)
+This is a Remix application that integrates with the AniList GraphQL API. The app uses Apollo Client for data fetching and Tailwind CSS for styling.
+
+## Features
+
+- **Paginated Anime Carousel**: Displays a list of anime in a carousel format with pagination.
+- **GraphQL Integration**: Uses Apollo Client to fetch data from the AniList GraphQL API.
+- **Server-Side Rendering**: Utilizes Remix's server-side rendering capabilities for improved performance and SEO.
+- **Tailwind CSS + shadcn UI lib**: Styled using Tailwind CSS and shadcn UI components a modern and responsive design.
 
 ## Development
 
-Run the dev server:
+To get started with development, follow these steps:
 
-```shellscript
-npm run dev
-```
+1. **Install Dependencies**: Run the following command to install the necessary dependencies.
 
-## Deployment
+    ```sh
+    npm install
+    ```
 
-First, build your app for production:
+2. **Run the Development Server**: Start the development server with the following command.
 
-```sh
-npm run build
-```
+    ```sh
+    npm run dev
+    ```
 
-Then run the app in production mode:
+3. **Testing**: Run the following command to run the tests.
 
-```sh
-npm start
-```
+    ```sh
+    npm test
+    ```
 
-Now you'll need to pick a host to deploy it to.
+4. **Open in Browser**: Open your browser and navigate to `http://localhost:5173` to see the application in action.
 
-### DIY
+## Project Structure
 
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
+Here's an overview of the project's structure:
 
-Make sure to deploy the output of `npm run build`
+- **components/ui**: Contains reusable UI components.
+- **lib/utils.ts**: Utility functions.
+- **root.tsx**: Root component of the application.
+- **routes/**: Server route files.
+- **services/**: Contains the services used throughout the application. e.g., Apollo Client to fetch data.
+- **tailwind.css**: Tailwind CSS configuration and custom styles.
+- ***.test.tsx/*.test.ts**: Test files for the components and services, usually located in the same directory.
 
-- `build/server`
-- `build/client`
 
-## Styling
+## License
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
